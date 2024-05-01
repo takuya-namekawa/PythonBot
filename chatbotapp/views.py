@@ -17,19 +17,19 @@ def home(request):
     return render(request, 'home.html', { 'categories' : categories})# categories変数をテンプレートに渡す
 
 
-def reply(question, categories):
+def reply(categories):
 
     tokenizer = BertJapaneseTokenizer.from_pretrained(model_name)
-
+    print(categories)
     if categories == "通信費":
-        context = '通信費の詳細は'
+        context = '通信費は2000円'
     elif categories == "固定費":
-        context = '固定費の詳細は'
+        context = '固定費は5000円'
     else:
         context = 'その他'
 
 
-    inputs = tokenizer.encode_plus(question, context , add_special_tokens=True, return_tensors="pt")
+    inputs = tokenizer.encode_plus(context , add_special_tokens=True, return_tensors="pt")
     input_ids = inputs["input_ids"].tolist()[0]
     output = model(**inputs)
     answer_start = torch.argmax(output.start_logits)

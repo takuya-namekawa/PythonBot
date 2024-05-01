@@ -118,7 +118,7 @@
             //ここでセレクトボックスに選択された値も取得し。dataに追加
             var category = $('select[name="category"]').val();
             var data = form.serialize() + '&category=' + category;
-            console.log('セレクトボックスの値のdebug' + category)
+            // console.log('セレクトボックスの値のdebug' + category)
             //HTMLフォームの情報を設定する
             $.ajax({
                 url: form.prop('action'), // 非同期通信するURL（/bot_response/）
@@ -127,12 +127,12 @@
                 dataType: 'text' ,// データのタイプ
                 
             })
-            console.log('dataの値のデバッグ' + data)
+            // console.log('dataの値のデバッグ' + data)
                 .done(function(statement){
                     createRow_user('あなた : ' + $('select[name="category"] option:selected').text()); //引数にあなたを出力しフォームで入力された値が指定のクラスで出力される
                     createRow_bot(statement); //ボットのログ
              
-                    $('input, select').val(''); //フォームに文章が残るので要素を空にする
+                    $('select').val(''); //フォームに文章が残るので要素を空にする
 
                     //ログ枠のスクロールを最後の結果に合わせる
                     $chatlog[0].scrollTop = $chatlog[0].scrollHeight;
