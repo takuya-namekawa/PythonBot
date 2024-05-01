@@ -1,0 +1,148 @@
+<!doctype html>
+<html>
+ 
+<head>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <!-- bootstrap CSS -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+
+    <!-- bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
+        crossorigin="anonymous"></script>
+        <title>Chat Bot</title>
+        <!-- CSS文 -->
+ <style>
+    .log-window {
+        width: 100%;
+        max-height: 500px;
+        overflow-y: scroll;
+        background-color: lightgray;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+
+    .chat-text-color1 {
+        width: 100%;
+    }
+
+    .chat-text-color1>span {
+        color: black;
+        /* ログのテキストを白に変更 */
+        background-color: white;
+        border-radius: 10px;
+        margin: 10px;
+        padding: 10px;
+    }
+
+    .chat-text-color2 {
+        width: 100%;
+        text-align: right;
+    }
+
+    .chat-text-color2>span {
+        color: black;
+        /* ログのテキストを白に変更 */
+        background-color: lightcyan;
+        border-radius: 10px;
+        margin: 10px;
+        padding: 10px;
+        text-align: right;
+    }
+</style>
+    </head>
+
+<body>
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+
+
+                
+            </div>
+            <div class="col-md-6">
+                <h1>AI Chat Bot</h1>
+                <div class="chat-log log-window">
+
+                </div>
+                <form action="{% url 'bot_response' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <button class="btn btn-success" type="submit">送信</button>
+                        <select class="form-control" name="category" aria-describedby="basic-addon1">
+                            <option value="">選択してください</option>
+                            {% for category in categories %}
+                                <option value="{{ category.name }}">{{ category.name }}</option>
+                                
+                            {% endfor %}
+
+                            
+                            
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-3">
+
+
+
+            </div>  
+            
+        </div>
+    </div>
+    <script>
+      
+        var $chatlog = $('.chat-log');  //チャット追加用
+
+        //ユーザーログを追加する関数
+        function createRow_user(text) {
+            var $row = $('<p class="chat-text-color1"><span>' + text + '</span></p>');
+            $chatlog.append($row);
+        }
+
+        //ボットのログを追加する関数
+        function createRow_bot(text) {
+            var $row = $('<p class="chat-text-color2"><span>' + text + '</span></p>');
+            $chatlog.append($row);
+        }
+
+        //Ajax
+        $('form').submit(function (event) {
+            event.preventDefault(); //event.preventDefault();は、フォームのデフォルトの送信処理（ページ遷移など）をキャンセルするために使用されます。 -> Ajaxを使用するために、通常のフォーム送信をキャンセルしている
+            var form = $(this) //var form = $(this);では、送信されようとしているそのフォーム自身をjQueryオブジェクトとしてform変数に格納しています。
+
+            //ここでセレクトボックスに選択された値も取得し。dataに追加
+            var category = $('select[name="category"]').val();
+            var data = form.serialize() + '&category=' + category;
+            console.log('セレクトボックスの値のdebug' + category)
+            //HTMLフォームの情報を設定する
+            $.ajax({
+                url: form.prop('action'), // 非同期通信するURL（/bot_response/）
+                type: form.prop('method'), // POST
+                data: data,
+                dataType: 'text' ,// データのタイプ
+                
+            })
+            console.log('dataの値のデバッグ' + data)
+                .done(function(statement){
+                    createRow_user('あなた : ' + $('select[name="category"] option:selected').text()); //引数にあなたを出力しフォームで入力された値が指定のクラスで出力される
+                    createRow_bot(statement); //ボットのログ
+             
+                    $('input, select').val(''); //フォームに文章が残るので要素を空にする
+
+                    //ログ枠のスクロールを最後の結果に合わせる
+                    $chatlog[0].scrollTop = $chatlog[0].scrollHeight;
+                })
+
+                //送信に失敗した場合
+                .fail(function (){
+                    window.alert('もう一度やり直してください');
+                });
+        });
+    </script>
+</body>
+</html>
