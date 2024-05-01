@@ -1,44 +1,19 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from .models import Category
-#AutoModelForQuestionAnsweringは質問応答する機能
-#BertJapaneseTokenizerは日本語のテキストをトークン化
-from transformers import AutoModelForQuestionAnswering, BertJapaneseTokenizer
-import torch
-from django.views.generic import TemplateView
-
-#KoichiYasuoka/bert-base-japanese-wikipedia-ud-headのモデルを利用して質問応答することを設定しています。
-model_name = 'KoichiYasuoka/bert-base-japanese-wikipedia-ud-head'
-model = AutoModelForQuestionAnswering.from_pretrained(model_name)
-
 # Create your views here.
 def home(request):
     categories = Category.objects.all() #Categoryモデルから全データを取得
     return render(request, 'home.html', { 'categories' : categories})# categories変数をテンプレートに渡す
 
 
-def reply(categories):
+def reply(category_name):
 
-    tokenizer = BertJapaneseTokenizer.from_pretrained(model_name)
-    print(categories)
-    if categories == "通信費":
-        context = '通信費は2000円'
-    elif categories == "固定費":
-        context = '固定費は5000円'
-    else:
-        context = 'その他'
-
-
-    inputs = tokenizer.encode_plus(context , add_special_tokens=True, return_tensors="pt")
-    input_ids = inputs["input_ids"].tolist()[0]
-    output = model(**inputs)
-    answer_start = torch.argmax(output.start_logits)
-    answer_end = torch.argmax(output.end_logits) + 1
-    answer = tokenizer.convert_tokens_to_string(tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end]))
-    answer = answer.replace(' ', '')
-
-    return answer
-
+    try:
+        category = Category.objects.get(name=category_name)
+        return category.exp if category.exp else '該当する説明がありません。'
+    except Category.DoesNotExist:
+        return '該当するカテゴリーが見つかりません。'
 
 def bot_response(request):
 
